@@ -1,14 +1,54 @@
 # 推广部招新网站 — 部署说明
 
-## 🟢 已上线地址
+## 🟢 正式访问地址（推荐分享这个）
+
+```
+https://qtcisme.github.io/neup-promotion/
+```
+
+- **HTTPS** 加密，**全球可访问**（不需要 IPv6，手机流量 / 任何网络都能打开）
+- 托管在 GitHub Pages，仓库：https://github.com/qtcisme/neup-promotion
+- 推送 `main` 分支后自动重新部署（约 1 分钟）
+
+### 备用地址（自有服务器）
 
 ```
 http://[2a01:111:f100:6000::4134:a761]:8080/
 ```
 
-> ⚠️ 这个地址是 **IPv6 形式**，因为所在 Azure VM 的公网 IPv4 入站不通（见下）。访问者需要在**有 IPv6 的网络**下打开（校园网可以）。IPv6 地址放进 URL 必须用方括号包起来——这是 URL 规范要求，不是笔误。
+托管在自己的 Azure VM 上，仅 IPv6 可达，作为备份/校园网内直连使用。IPv6 地址放进 URL 必须用方括号包起来——这是 URL 规范要求，不是笔误。
 
-**当前托管位置**：Azure VM `PHOTONICLOVE`（东北大学校园网内可直连）
+---
+
+## 一、更新网站内容
+
+### 方式 A：改 GitHub Pages（正式站）
+
+```bash
+# 在 neup-site 目录下
+git add -A
+git commit -m "更新内容"
+git push
+```
+
+推送后 GitHub Actions 自动部署，约 1 分钟生效。查看部署状态：
+
+```bash
+gh run list --limit 5
+gh run watch
+```
+
+### 方式 B：改自有服务器（备用站）
+
+```bash
+scp index.html changerning@[2a01:111:f100:6000::4134:a761]:/var/www/neup-site/index.html
+```
+
+HTML 已配置 `no-cache`，刷新即生效，无需重启服务。
+
+---
+
+## 二、自有服务器的部署信息（备用站）
 
 | 项目 | 值 |
 |---|---|
@@ -20,35 +60,25 @@ http://[2a01:111:f100:6000::4134:a761]:8080/
 
 **为什么用 8080 而不是默认 80**：sing-box 的订阅服务占用了 52617，而 80 端口未放通。选 8080 是为了和免流服务完全隔离，将来重跑 sing-box 安装脚本不会影响这个网站。
 
-**更新网站内容**：
-
-```bash
-scp index.html changerning@[2a01:111:f100:6000::4134:a761]:/var/www/neup-site/index.html
-# HTML 已配置 no-cache，刷新即生效，无需重启服务
-```
-
-**常用运维命令**（SSH 登录服务器后）：
-
 ```bash
 systemctl status neup-site        # 查看状态
 systemctl restart neup-site       # 重启
 nginx -t -c /etc/nginx/neup-site.conf   # 校验配置
 ```
 
-> **想要更好看的域名？** 目前 IPv4 入站不通，所以拿不到能公网普遍访问的域名。若要走域名 + 80/443，需要先解决 Azure 侧 IPv4 入站问题（详见 `免流通道部署记录.md` 第九节），或改用 Cloudflare Pages / GitHub Pages 托管（方案见下）。
+---
+
+一个**零依赖的单文件静态网站**：全部 HTML / CSS / JS 都在 `index.html` 里，没有任何外部依赖（无 CDN、无字体请求、无构建步骤）。
 
 ---
 
-一个**零依赖的单文件静态网站**：全部 HTML / CSS / JS 都在 `index.html` 里，没有任何外部依赖（无 CDN、无字体请求、无构建步骤）。丢到任何静态托管上都能上线。
-
----
-
-## 一、文件
+## 三、文件
 
 ```
 neup-site/
-├── index.html      网站全部内容（约 43 KB）
-└── README.md       本文件
+├── index.html                     网站全部内容（约 43 KB）
+├── README.md                      本文件
+└── .github/workflows/pages.yml    GitHub Pages 自动部署工作流
 ```
 
 ## 二、本地预览
