@@ -1,0 +1,8 @@
+﻿# 开发/截图临时文件
+_*.html
+_probe.js
+shots/
+.commitmsg
+*.log
+.DS_Store
+Thumbs.db
